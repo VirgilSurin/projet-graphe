@@ -135,12 +135,12 @@ def resolve(filename):
     E = int(f.readline())
     B = int(f.readline())
     input_numbers = [int(line) for line in f.readlines()]
-    return cost(solve(250, 5, 0.25, 100, input_numbers, N, B, E), N, B, E)
+    return cost(solve(1000, 5, 0.7, 1000, input_numbers, N, B, E), N, B, E)
 
 
 
 filenames = ["data1.dat", "data2.dat", "data3.dat", "data4.dat", "data5.dat", "data6.dat", "data7.dat", "data8.dat", "data9.dat", "data10.dat"]
 score_prof = [5243, 8190, 3897, 9978, 4966, 15030, 7194, 239778, 229428, 226788]
-[print("Problem " + filenames[i] + " : " + str(resolve(filenames[i])) + " vs " + str(score_prof[i]) + " | diff: " + str(score_prof[i] - resolve(filenames[i]))) for i in range(len(filenames))]
+[print("Problem " + filenames[i] + " : " + str(resolve(filenames[i])) + " vs " + str(score_prof[i]) + " | diff: " + str(score_prof[i] - resolve(filenames[i])) + " => " + str(((score_prof[i] - resolve(filenames[i]))/score_prof[i])*100)) for i in range(len(filenames))]
 
 
