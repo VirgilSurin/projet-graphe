@@ -55,7 +55,6 @@ def cost(sol,N,B,E):
         for j in range(len(sol[i])):
             l.append(sol[i][j])
     l.sort(reverse=True)
-    
     cost=0
     for i in range(B):
         max_index = i*E
@@ -116,7 +115,19 @@ def split(x, n):
 
 
 def get_init_solution():
-    return init_sol
+    sol=[]
+    for i in range(N):
+        sol.append([input_numbers[i]])
+    for i in range(B * E - N) :
+        index=i%N
+        end = len(sol[index])-1
+        num = sol[index][end]           
+        (a,b) = split(num,2)
+        sol[index][end] = a
+        sol[index].append(b)
+    return sol
+
+print(cost(get_init_solution() , N , B , E))
 
 
 def resolve(filenames):
