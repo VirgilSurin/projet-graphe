@@ -1,0 +1,5 @@
+
+*.dat#
+samples/.#data1.dat
+*.py#
+recuit/.#main.py
