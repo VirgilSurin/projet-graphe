@@ -9,7 +9,7 @@ def solve(T, Tf, decreasing, step, input_numbers, N, B, E):
     decreasing -> pourcentage de decroissance
     step -> nombre d'etape a la meme temperature
     """
-    s = get_init_solution()
+    s = get_init_solution(N, B, E, input_numbers)
     e = cost(s, N, B, E)
     best_s = s
     best_e = e
@@ -114,7 +114,7 @@ def split(x, n):
     return res
 
 
-def get_init_solution():
+def get_init_solution(N, B, E, input_numbers):
     sol=[]
     for i in range(N):
         sol.append([input_numbers[i]])
@@ -127,17 +127,15 @@ def get_init_solution():
         sol[index].append(b)
     return sol
 
-print(cost(get_init_solution() , N , B , E))
 
-
-def resolve(filenames):
-    filepath = "./samples/" + filename
+def resolve(filename):
+    filepath = "../samples/" + filename
     f = open(filepath, "r")
     N = int(f.readline())
     E = int(f.readline())
     B = int(f.readline())
     input_numbers = [int(line) for line in f.readlines()]
-    return solve(1000, 5, 0.75, 1000, input_numbers, N, B, E)
+    return cost(solve(250, 5, 0.25, 100, input_numbers, N, B, E), N, B, E)
 
 
 
