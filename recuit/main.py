@@ -28,7 +28,7 @@ def solve(T, Tf, decreasing, step, input_numbers, N, B, E):
 
 
 def prob(de, T):
-    return exp(-de/T)
+    return exp(de/T)
 
 
 def cost(sol,N,B,E):
@@ -114,25 +114,24 @@ def split(x, n):
                 res.append(pp)
     return res
 
-# samples data1.dat
-input_numbers = [7660, 7290, 7040, 6890, 5860, 5090, 4640, 3830, 3460, 580]
-init_sol = [[2430, 2430, 2240, 560], \
-            [2430, 2430, 2430], \
-            [2430, 2430, 2180], \
-            [2430, 2240, 2220], \
-            [2430, 2240, 610, 580], \
-            [2430, 2240, 610], \
-            [2430, 2210], \
-            [2240, 610, 610, 370], \
-            [2240, 610, 610], \
-            [580]]
-N = 10
-B = 3
-E = 10
+
 def get_init_solution():
     return init_sol
 
-res = solve(100000, 5, 0.01, 10000, input_numbers, N, B, E)
-print(res)
-print(cost(res, N, B, E))
+
+def resolve(filenames):
+    filepath = "./samples/" + filename
+    f = open(filepath, "r")
+    N = int(f.readline())
+    E = int(f.readline())
+    B = int(f.readline())
+    input_numbers = [int(line) for line in f.readlines()]
+    return solve(1000, 5, 0.75, 1000, input_numbers, N, B, E)
+
+
+
+filenames = ["data1.dat", "data2.dat", "data3.dat", "data4.dat", "data5.dat", "data6.dat", "data7.dat", "data8.dat", "data9.dat", "data10.dat"]
+score_prof = [5243, 8190, 3897, 9978, 4966, 15030, 7194, 239778, 229428, 226788]
+[print("Problem " + filenames[i] + " : " + str(resolve(filenames[i])) + " vs " + str(score_prof[i]) + " | diff: " + str(score_prof[i] - resolve(filenames[i]))) for i in range(len(filenames))]
+
 
