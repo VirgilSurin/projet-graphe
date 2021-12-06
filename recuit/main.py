@@ -55,7 +55,6 @@ def cost(sol,N,B,E):
         for j in range(len(sol[i])):
             l.append(sol[i][j])
     l.sort(reverse=True)
-    
     cost=0
     for i in range(B):
         max_index = i*E
@@ -116,23 +115,28 @@ def split(x, n):
 
 # samples data1.dat
 input_numbers = [7660, 7290, 7040, 6890, 5860, 5090, 4640, 3830, 3460, 580]
-init_sol = [[2430, 2430, 2240, 560], \
-            [2430, 2430, 2430], \
-            [2430, 2430, 2180], \
-            [2430, 2240, 2220], \
-            [2430, 2240, 610, 580], \
-            [2430, 2240, 610], \
-            [2430, 2210], \
-            [2240, 610, 610, 370], \
-            [2240, 610, 610], \
-            [580]]
+
 N = 10
 B = 3
 E = 10
+
+
+
 def get_init_solution():
-    return init_sol
+    sol=[]
+    for i in range(N):
+        sol.append([input_numbers[i]])
+    for i in range(B * E - N) :
+        index=i%N
+        end = len(sol[index])-1
+        num = sol[index][end]           
+        (a,b) = split(num,2)
+        sol[index][end] = a
+        sol[index].append(b)
+    return sol
+
+print(cost(get_init_solution() , N , B , E))
 
 res = solve(100000, 5, 0.01, 10000, input_numbers, N, B, E)
 print(res)
 print(cost(res, N, B, E))
-
