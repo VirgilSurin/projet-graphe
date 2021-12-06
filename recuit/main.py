@@ -1,22 +1,22 @@
 import random
+from copy import deepcopy
+from math import exp
 
-
-def solve(s,T,Tf,N, input_numbers):
+def solve(T, Tf, decreasing, step, input_numbers, N, B, E):
     """
-    s -> solution initiale
     T -> temperature initiale
     Tf -> temperature finale
     decreasing -> pourcentage de decroissance
-    N -> nombre d'etape a la meme temperature
+    step -> nombre d'etape a la meme temperature
     """
-    s = getInitSolution()
-    e = cost(s)
+    s = get_init_solution()
+    e = cost(s, N, B, E)
     best_s = s
     best_e = e
     while T > Tf :
-        for k in range(N):
+        for k in range(step):
             sn = generate_random_neighbor(input_numbers, s)
-            en = cost(sn)
+            en = cost(sn, N, B, E)
             if (en < e) or (random.random() < prob(e-en, T)):
                 s = sn
                 e = en
@@ -28,14 +28,46 @@ def solve(s,T,Tf,N, input_numbers):
 
 
 def prob(de, T):
-    return e^(-de/T)
+    return exp(-de/T)
+
+
+def cost(sol,N,B,E):
+    """Get the cost of a solution
+
+    Parameters
+    ----------
+    sol : array of array of int (lol)
+        The solution 
+    N : int
+        Length of the input data
+    B : int
+        Number of boxes in which the data have to be split in
+    E : int 
+        Size of the boxes
+
+    Returns
+    -------
+    int
+        The cost of the input solution
+    """
+    l = []
+    for i in range(N):
+        for j in range(len(sol[i])):
+            l.append(sol[i][j])
+    l.sort(reverse=True)
+    
+    cost=0
+    for i in range(B):
+        max_index = i*E
+        cost+=l[max_index]
+    return cost
 
 
 def generate_random_neighbor(input_numbers, sol):
     """
     given a sol, will swap and create a neighbor.
     """
-    neighbor = []
+    neighbor = deepcopy(sol)
     # we generate a neighbor by swaping the number of split of two number
     
     # we choose two number to swap
@@ -51,8 +83,9 @@ def generate_random_neighbor(input_numbers, sol):
     new_i = split(input_numbers[i], j_split)
     new_j = split(input_numbers[j], i_split)
     # now we replace
-    sol[i] = new_i
-    sol[j] = new_j
+    neighbor[i] = new_i
+    neighbor[j] = new_j
+    return neighbor
     
     
 def split(x, n):
@@ -93,5 +126,13 @@ init_sol = [[2430, 2430, 2240, 560], \
             [2240, 610, 610, 370], \
             [2240, 610, 610], \
             [580]]
+N = 10
+B = 3
+E = 10
+def get_init_solution():
+    return init_sol
 
+res = solve(100000, 5, 0.01, 10000, input_numbers, N, B, E)
+print(res)
+print(cost(res, N, B, E))
 
