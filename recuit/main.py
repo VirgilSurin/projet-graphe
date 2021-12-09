@@ -76,9 +76,13 @@ def generate_random_neighbor(input_numbers, sol):
         j = random.randint(0, len(input_numbers)-1)
     
     # print(str(i) + " | " + str(j) + " / " + str(len(sol)) + " = " + str(len(input_numbers)))
-    i_split = len(sol[i])
-    j_split = len(sol[j])
+    total_split = len(sol[i]) + len(sol[j])
+    i_split = random.randint(1, total_split-1)
+    j_split = total_split - i_split
     # we know the number of splits for each number
+    # biggest = max([max(sublist) for sublist in sol])
+    # new_i = smarter_split(input_numbers[i], biggest, j_split)[0]
+    # new_j = smarter_split(input_numbers[j], biggest, i_split)[0]
     new_i = split(input_numbers[i], j_split)
     new_j = split(input_numbers[j], i_split)
     # now we replace
@@ -113,6 +117,53 @@ def split(x, n):
                 res.append(pp)
     return res
 
+def smarter_split(x, biggest, n=None):
+    """
+    given the biggest split, will split the number x without going above biggest.
+    If n is specified, will split it in maximum n number.
+    Return an array with all the splits and the number of splits made and the biggest number
+    """
+    # TODO does not work
+    if x <= biggest:
+        return [x], 1, biggest
+    else:
+        if n != None:
+            res = []
+            while x >= biggest and n > 1:
+                x -= biggest
+                res.append(biggest)
+                n -= 1
+            if n > 1:
+                if x > 0:
+                    res.append(x)
+                    n -= 1
+                while n > 0:
+                    res.append(0)
+                    n -= 1
+                if x > biggest and n > 0:
+                    return res, len(res), x
+                else:
+                    return res, len(res), biggest
+            else:
+                if x > 0 and n > 0:
+                    res.append(x)
+                    n -= 1
+                if x > biggest and n > 0:
+                    return res, len(res), x
+                else:
+                    return res, len(res), biggest
+        else:
+            res = []
+            while x >= biggest:
+                x -= biggest
+                res.append(biggest)
+            if x > 0:
+                res.append(x)
+            if x > biggest:
+                return res, len(res), x
+            else:
+                return res, len(res), biggest
+            
 
 def get_init_solution(N, B, E, input_numbers):
     sol=[]
@@ -142,5 +193,4 @@ def resolve(filename):
 filenames = ["data1.dat", "data2.dat", "data3.dat", "data4.dat", "data5.dat", "data6.dat", "data7.dat", "data8.dat", "data9.dat", "data10.dat"]
 score_prof = [5243, 8190, 3897, 9978, 4966, 15030, 7194, 239778, 229428, 226788]
 [print("Problem " + filenames[i] + " : " + str(resolve(filenames[i])) + " vs " + str(score_prof[i]) + " | diff: " + str(score_prof[i] - resolve(filenames[i])) + " => " + str(((score_prof[i] - resolve(filenames[i]))/score_prof[i])*100)) for i in range(len(filenames))]
-
 
