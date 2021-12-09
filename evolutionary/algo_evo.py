@@ -103,7 +103,7 @@ def select_parents(ind_list,tournament_N, B, E):
 
 
 if __name__ == "__main__":
-    datafile = "data.dat"
+    datafile = "../samples/data1.dat"
     data = get_data(datafile)
     N = len(data)
     B = 3
@@ -111,7 +111,6 @@ if __name__ == "__main__":
     size = 20
     pop = generate_pop(size, N, B, E, data)
     parents = select_parents(pop, size//2, B,E)
-    print(crossing2Points(parents[0][0],parents[0][1]))
     k=1
     for p1,p2 in parents:
         print(k)
