@@ -80,11 +80,11 @@ def generate_random_neighbor(input_numbers, sol):
     i_split = random.randint(1, total_split-1)
     j_split = total_split - i_split
     # we know the number of splits for each number
-    # biggest = max([max(sublist) for sublist in sol])
-    # new_i = smarter_split(input_numbers[i], biggest, j_split)[0]
-    # new_j = smarter_split(input_numbers[j], biggest, i_split)[0]
-    new_i = split(input_numbers[i], j_split)
-    new_j = split(input_numbers[j], i_split)
+    # new_i = split(input_numbers[i], j_split)
+    # new_j = split(input_numbers[j], i_split)
+    new_i = smart_split(input_numbers[i], i_split)
+    new_j = smart_split(input_numbers[j], j_split)
+    
     # now we replace
     neighbor[i] = new_i
     neighbor[j] = new_j
@@ -117,53 +117,32 @@ def split(x, n):
                 res.append(pp)
     return res
 
-def smarter_split(x, biggest, n=None):
-    """
-    given the biggest split, will split the number x without going above biggest.
-    If n is specified, will split it in maximum n number.
-    Return an array with all the splits and the number of splits made and the biggest number
-    """
-    # TODO does not work
-    if x <= biggest:
-        return [x], 1, biggest
-    else:
-        if n != None:
-            res = []
-            while x >= biggest and n > 1:
-                x -= biggest
-                res.append(biggest)
-                n -= 1
-            if n > 1:
-                if x > 0:
-                    res.append(x)
-                    n -= 1
-                while n > 0:
-                    res.append(0)
-                    n -= 1
-                if x > biggest and n > 0:
-                    return res, len(res), x
-                else:
-                    return res, len(res), biggest
-            else:
-                if x > 0 and n > 0:
-                    res.append(x)
-                    n -= 1
-                if x > biggest and n > 0:
-                    return res, len(res), x
-                else:
-                    return res, len(res), biggest
-        else:
-            res = []
-            while x >= biggest:
-                x -= biggest
-                res.append(biggest)
-            if x > 0:
-                res.append(x)
-            if x > biggest:
-                return res, len(res), x
-            else:
-                return res, len(res), biggest
-            
+
+def get_one_splitted(n,l):
+    if n == 1:
+        return [1]
+    split=[]
+    for i in range(1,n+1):
+        split.append( (1 - exp(-l*i)) - (1 - exp(-l*(i-1))))
+    return split
+
+def smart_split(x, n):
+    weights = get_one_splitted(n, 0.85)
+    res = []
+    for weight in weights:
+        split = int(x * weight)
+        res.append(split)
+    # watchout, the sum of splits may not be equal to the original number
+    # we need to adjust it
+    # I do so by adding what's missing on the last split
+    check_sum = sum(res)
+    if check_sum != x:
+        last = res.pop()
+        res.append(last + (x - check_sum))
+    if sum(res) != x:
+        raise ValueError("AAAAH")
+    return res
+
 
 def get_init_solution(N, B, E, input_numbers):
     sol=[]
