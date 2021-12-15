@@ -1,5 +1,7 @@
 from random import *
 from copy import deepcopy
+from copy import copy
+
 def get_data(datafile):
     l = []
     with open(datafile) as f:
@@ -37,9 +39,22 @@ def generate_pop(size, N, B, E, data):
                 continue
                 #todo: treshold
 
+            """
             #nouvelle découpe de la donnée
             new_cut = [chosen_one//nb_of_cut for i in range(nb_of_cut)]
             new_cut[0] += chosen_one%nb_of_cut
+            """
+
+            #découpe aléatoire de la donnée
+            new_cut = []
+            to_split = chosen_one
+            for i in range(nb_of_cut-1):
+                if to_split > 1:
+                    d = randint(1,to_split//2)
+                    new_cut.append(d)
+                    to_split -= d  
+            new_cut.append(to_split)
+            new_cut.sort(reverse=True)
 
             #on retire la donnée et on la remplace par sa nouvelle découpe
             ind[indexI].remove(chosen_one)
@@ -51,6 +66,7 @@ def generate_pop(size, N, B, E, data):
         #on rajoute l'individu obtenu à la population
         pop.append(ind)
     return pop
+
 
 
 
@@ -97,10 +113,62 @@ def select_parents(ind_list,tournament_N, B, E):
         new_parents.append((p1,p2))
     return new_parents
 
+def cross_parents(p1,p2, B, E):
+    if not(len(p1) == len(p2)):
+        raise ValueError("Illegal arguments: sizes do not match!")
+
+    c1 = []
+
+    c2 = []
+
+    crossPoint = randint(0, len(p1))
+
+    for i in range(0, len(p1)):
+        if(i < crossPoint):
+            c1.append(copy(p1[i]))
+            c2.append(copy(p2[i]))
+        else:
+            c1.append(copy(p2[i]))
+            c2.append(copy(p1[i]))
+    return c1, c2
+
+def calculate_e(ind):
+    res = 0
+    for item in ind:
+        res += len(item)
+    return res
+def normalize_children(c1, c2, B, E):
+    a = calculate_e(c1)
+    if a != B*E:
+        c1 = reequilibrate(c1, a, B, E)
+    b = calculate_e(c2)
+    if b != B*E:
+        c2 = reequilibrate(c2, b, B, E)
+    return c1,c2
+
+def reequilibrate(c,l, B, E):
+    print("reequilibrate")
+    voyager = 0
+    while l > B*E:
+        if len(c[voyager]) >= 2:
+            c[voyager][-2] += c[voyager][-1]
+            c[voyager].pop()
+            c[voyager].sort()
+            l = calculate_e(c)
+        voyager = (voyager + 1)%len(c)
+    voyager = 0
+    while l < B*E:
+        newv1 = c[voyager].pop(0)
+        
+        c[voyager].append(newv1//2 + newv1 %2)
+        c[voyager].append(newv1//2)
+        c[voyager].sort()
+        voyager = (voyager + 1)%(len(c))
+        l = calculate_e(c)
+
+    return c
 """
 """
-
-
 
 if __name__ == "__main__":
     datafile = "../samples/data1.dat"
@@ -109,12 +177,33 @@ if __name__ == "__main__":
     B = 3
     E = 10
     size = 20
+    nb_gen = 30
     pop = generate_pop(size, N, B, E, data)
+    for item in pop:
+        print(item)
+        print("size",calculate_e(item))
+
     parents = select_parents(pop, size//2, B,E)
     k=1
     for p1,p2 in parents:
         print(k)
         print("p1:", p1)
+        print("size p1:", calculate_e(p1), "| cost: ", get_cost(p1, B, E))
         print("p2:", p2)
-        print("")
+        print("size p2", calculate_e(p2), "| cost: ", get_cost(p2, B, E))
+        c1, c2 = cross_parents(p1,p2, B, E)
+
+        print("c1:", c1)
+        print("size c1: ", calculate_e(c1))
+        print("c2:", c2)
+        print("size c2: ", calculate_e(c2))
+
+        c1, c2 = normalize_children(c1, c2, B, E)
+        
+        print("child1 normalized : ", c1)
+        print("len c1", calculate_e(c1), "cost: ", get_cost(c1, B, E))
+        print("child2 normalized: ",c2)
+        print("len c2", calculate_e(c2), "cost: ", get_cost(c2, B, E))
+        
         k+=1
+
