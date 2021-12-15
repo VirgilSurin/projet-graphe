@@ -2,6 +2,7 @@ from random import *
 from copy import deepcopy
 from copy import copy
 
+
 def get_data(datafile):
     l = []
     with open(datafile) as f:
@@ -113,12 +114,15 @@ def select_parents(ind_list,tournament_N, B, E):
         new_parents.append((p1,p2))
     return new_parents
 
-def cross_parents(p1,p2, B, E):
+def cross_parents(p1,p2, cross_prob, B, E):
+    prob = round(random(),2)
+
+    if prob > cross_prob:
+        return p1,p2
     if not(len(p1) == len(p2)):
         raise ValueError("Illegal arguments: sizes do not match!")
 
     c1 = []
-
     c2 = []
 
     crossPoint = randint(0, len(p1))
@@ -130,6 +134,7 @@ def cross_parents(p1,p2, B, E):
         else:
             c1.append(copy(p2[i]))
             c2.append(copy(p1[i]))
+    print("cross")
     return c1, c2
 
 def calculate_e(ind):
@@ -147,7 +152,6 @@ def normalize_children(c1, c2, B, E):
     return c1,c2
 
 def reequilibrate(c,l, B, E):
-    print("reequilibrate")
     voyager = 0
     while l > B*E:
         if len(c[voyager]) >= 2:
@@ -167,10 +171,93 @@ def reequilibrate(c,l, B, E):
         l = calculate_e(c)
 
     return c
+
+
+"""
+Recherche Locale
+"""
+
+def generate_random_neighbor(sol, data):
+    """
+    given a sol, will swap and create a neighbor.
+    """
+    neighbor = deepcopy(sol)
+    # we generate a neighbor by swaping the number of split of two number
+    
+    # we choose two number to swap
+    i, j = 0, 0
+    while i == j:
+        i = randint(0, len(data)-1)
+        j = randint(0, len(data)-1)
+    
+    # print(str(i) + " | " + str(j) + " / " + str(len(sol)) + " = " + str(len(input_numbers)))
+    total_split = len(sol[i]) + len(sol[j])
+    i_split = randint(1, total_split-1)
+    j_split = total_split - i_split
+    new_i = split(data[i], i_split)
+    new_j = split(data[j], j_split)
+
+    
+    # now we replace
+    neighbor[i] = new_i
+    neighbor[j] = new_j
+    return neighbor
+    
+    
+def split(x, n):
+    """
+    given a number x, will split it in n equal part.
+    If not possible, it will be the "most equal part possible".
+    """
+    res = []
+    if x%n == 0:
+        # just need to put the result of x//n n times in res.
+        part = x//n
+        for i in range(n):
+            res.append(part)
+    else:
+        # stolen from : https://www.geeksforgeeks.org/split-the-number-into-n-parts-such-that-difference-between-the-smallest-and-the-largest-part-is-minimum/
+        # upto n-(x % n) the values
+        # will be x/n
+        # after that the values
+        # will be (x/n) + 1
+        zp = n - (x % n)
+        pp = x//n
+        for i in range(n):
+            if(i >= zp):
+                res.append(pp+1)
+            else:
+                res.append(pp)
+    return res
+
+
+def mutate(c, mutation_prob, data, nb_neighbor, B, E):
+    prob = round(random(), 2)
+    if prob > mutation_prob:
+        return c
+    neighborhood = []
+    for i in range(nb_neighbor):
+        neighborhood.append(generate_random_neighbor(c, data))
+
+    while True:
+        find_better_sol = False
+        for sol in neighborhood:
+            if get_cost(c, B, E) > get_cost(sol, B, E):
+                c = sol
+                find_better_sol = True
+                break
+                
+        if not find_better_sol:
+            break
+    print("mutation")
+    return c
+
 """
 """
 
 if __name__ == "__main__":
+
+    #inputs
     datafile = "../samples/data1.dat"
     data = get_data(datafile)
     N = len(data)
@@ -178,6 +265,11 @@ if __name__ == "__main__":
     E = 10
     size = 20
     nb_gen = 30
+    nb_neighbor = 500
+
+    cross_prob = 0.75
+    mutation_prob = 0.085
+
     pop = generate_pop(size, N, B, E, data)
     for item in pop:
         print(item)
@@ -191,7 +283,7 @@ if __name__ == "__main__":
         print("size p1:", calculate_e(p1), "| cost: ", get_cost(p1, B, E))
         print("p2:", p2)
         print("size p2", calculate_e(p2), "| cost: ", get_cost(p2, B, E))
-        c1, c2 = cross_parents(p1,p2, B, E)
+        c1, c2 = cross_parents(p1, p2, cross_prob, B, E)
 
         print("c1:", c1)
         print("size c1: ", calculate_e(c1))
@@ -201,9 +293,26 @@ if __name__ == "__main__":
         c1, c2 = normalize_children(c1, c2, B, E)
         
         print("child1 normalized : ", c1)
-        print("len c1", calculate_e(c1), "cost: ", get_cost(c1, B, E))
+        before1 = get_cost(c1, B, E)
+        print("len c1", calculate_e(c1), "cost: ", before1)
         print("child2 normalized: ",c2)
+        before2 = get_cost(c2, B, E)
+        print("len c2", calculate_e(c2), "cost: ", before2)
+
+
+        print("TEST MUTATION")
+        c1 = mutate(c1, mutation_prob ,data, nb_neighbor, B, E)
+        print("Better c1", c1)
+        after1 = get_cost(c1, B, E)
+        print("len c1", calculate_e(c1), "cost: ", after1)
+
+        c2 = mutate(c2, mutation_prob, data, nb_neighbor, B, E)
+        print("Better c2", c2)
+        after2 = get_cost(c2, B, E)
         print("len c2", calculate_e(c2), "cost: ", get_cost(c2, B, E))
-        
+
+        print()
+        print("\nC1: Before: ", before1, " After: ", after1)
+        print("\nC2: Before: ", before2, " After: ", after2)
         k+=1
 
