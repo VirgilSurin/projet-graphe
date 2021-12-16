@@ -116,7 +116,7 @@ def select_parents(ind_list,tournament_N, B, E):
 
 def cross_parents(p1,p2, cross_prob, B, E):
     prob = random()
-    if prob <= cross_prob:
+    if prob > cross_prob:
         return p1,p2
     if not(len(p1) == len(p2)):
         raise ValueError("Illegal arguments: sizes do not match!")
@@ -161,13 +161,14 @@ def reequilibrate(c,l, B, E):
         voyager = (voyager + 1)%len(c)
     voyager = 0
     while l < B*E:
-        newv1 = c[voyager].pop(0)
-        
-        c[voyager].append(newv1//2 + newv1 %2)
-        c[voyager].append(newv1//2)
-        c[voyager].sort()
+        if c[voyager][0]//2 + c[voyager][0] %2 > 1:
+            newv1 = c[voyager].pop(0)
+            c[voyager].append(newv1//2 + newv1 %2)
+            c[voyager].append(newv1//2)
+            c[voyager].sort()
+            l = calculate_e(c)
         voyager = (voyager + 1)%(len(c))
-        l = calculate_e(c)
+        
 
     return c
 
@@ -232,7 +233,7 @@ def split(x, n):
 
 def mutate(c, mutation_prob, data, nb_neighbor, B, E):
     prob = random()
-    if prob <= mutation_prob:
+    if prob > mutation_prob:
         return c
     neighborhood = []
     for i in range(nb_neighbor):
@@ -310,6 +311,9 @@ if __name__ == "__main__":
         after2 = get_cost(c2, B, E)
         print("len c2", calculate_e(c2), "cost: ", get_cost(c2, B, E))
 
+        print()
+        print("P1: ", get_cost(p1, B,E))
+        print("P2: ", get_cost(p2, B, E))
         print()
         print("\nC1: Before: ", before1, " After: ", after1)
         print("\nC2: Before: ", before2, " After: ", after2)
