@@ -115,9 +115,8 @@ def select_parents(ind_list,tournament_N, B, E):
     return new_parents
 
 def cross_parents(p1,p2, cross_prob, B, E):
-    prob = round(random(),2)
-
-    if prob > cross_prob:
+    prob = random()
+    if prob <= cross_prob:
         return p1,p2
     if not(len(p1) == len(p2)):
         raise ValueError("Illegal arguments: sizes do not match!")
@@ -232,8 +231,8 @@ def split(x, n):
 
 
 def mutate(c, mutation_prob, data, nb_neighbor, B, E):
-    prob = round(random(), 2)
-    if prob > mutation_prob:
+    prob = random()
+    if prob <= mutation_prob:
         return c
     neighborhood = []
     for i in range(nb_neighbor):
