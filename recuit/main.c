@@ -89,6 +89,19 @@ int * equalSplit(int x, int n, int m){
     return res;
 }
 
+int * mixSplit(int x, int n, float mix){
+    int * res = malloc(n * sizeof(int));
+    int px = x*mix;
+    int * eqSplit = equalSplit(px,n,1);
+    int * spt = split(x - px,n,1);
+    for(int i = 0; i < n; i++){
+        res[i] = eqSplit[i] + spt[i];
+    }
+    free(eqSplit);
+    free(spt);
+    return res;
+}
+
 
 Solution* getInitSol(int * input_numbers, int N, int B, int E){
     int r = N;
@@ -115,6 +128,25 @@ Solution* getInitSol(int * input_numbers, int N, int B, int E){
         free(num_split);
     }
     return solution;
+}
+
+bool correctSolution(Solution * sol, int * input_numbers, int N, int B, int E){
+    int c = B*E-N;
+    int count=0;
+    for(int i = 0; i < N; i++){
+        int sum = 0;
+        for(int j = 0; j < sol->size[i]; j++){
+            if(sol->sol[i*c + j] <= 0) 
+                return false;
+            sum += sol->sol[i*c + j]; 
+            count+=1;
+        }
+        if(sum != input_numbers[i])
+            return false;
+    }
+    if(count != B*E)
+        return false;
+    return true;
 }
 
 void printSol(Solution* sol, int N, int B, int E){
@@ -147,7 +179,8 @@ Solution * deepcopy(Solution * sol, int N, int B, int E){
     return copy;
 }
 
-Solution * randomNeighbor(int * input_numbers,Solution * sol, int N, int B, int E){
+Solution * randomNeighbor(int * input_numbers,Solution * sol, 
+    int N, int B, int E, float mix){
     int c = B*E-N;
     Solution * neighbor = deepcopy(sol,N,B,E);
     //we generate a neighbor by swaping the number of split of two number
@@ -162,8 +195,8 @@ Solution * randomNeighbor(int * input_numbers,Solution * sol, int N, int B, int 
     int i_split = rand()%(total_split-1) + 1; 
     int j_split = total_split - i_split;
 
-    int * new_i = equalSplit(input_numbers[i], i_split, 10);
-    int * new_j = equalSplit(input_numbers[j], j_split, 10);
+    int * new_i = mixSplit(input_numbers[i], i_split, mix);
+    int * new_j = mixSplit(input_numbers[j], j_split, mix);
 
     neighbor->size[i] = i_split;
     for(int a = 0; a < i_split; a++){
@@ -185,7 +218,7 @@ float prob(float de, float T){
 }
 
 Solution * solve(int * input_numbers,Solution * init_sol,
-    int N,int B,int E,float T,float Tf,float decreasing,int step){
+    int N,int B,int E,float T,float Tf,float decreasing,int step,float mix){
 
     Solution * current_sol = deepcopy(init_sol,N,B,E);
     int current_cost = cost(init_sol,N,B,E);
@@ -194,7 +227,7 @@ Solution * solve(int * input_numbers,Solution * init_sol,
     Solution * neighbor_sol;
     while(T > Tf){
         for(int k=0; k < step; k++){
-            neighbor_sol = randomNeighbor(input_numbers,current_sol,N,B,E);
+            neighbor_sol = randomNeighbor(input_numbers,current_sol,N,B,E,mix);
             int neighbor_cost = cost(neighbor_sol,N,B,E);
             if((neighbor_cost < current_cost) || 
                 (randomFloat()< prob(current_cost-neighbor_cost,T))){
@@ -240,13 +273,14 @@ int main(int argc, char const *argv[]){
 
         fclose(f);
         Solution * init_sol = getInitSol(data,N,B,E);
-        Solution * solution = solve(data,init_sol,N,B,E,1000,0.1,0.95,1000);
+        Solution * solution = solve(data,init_sol,N,B,E,200,0.001,0.99,1000,0.75);
         int c = cost(solution, N, B, E);
         int prof = score_prof[i-1];
         int diff = prof - c;
+        bool correct = correctSolution(solution,data, N,B,E);
         float p = ( (float)(prof - c) / prof) * 100;
-        printf("Problem data%d.dat : %d vs %d | diff: %d => %.6f \n",i,c,prof,diff,p);
-
+        printf("Problem data%d.dat : %d vs %d | diff: %d => %.6f | correct: %d\n",i,c,prof,diff,p,correct);
+        printSol(solution,N,B,E);
     }
 
 
