@@ -190,6 +190,52 @@ void printSol(Solution* sol, int N, int B, int E){
     printf("]\n");
 }
 
+void printSolToFile(Solution* sol, int * input_numbers, int N, int B, int E,const char* filename){
+    int col = B*E-N;
+    FILE *fptr;
+    int* list;
+    fptr = fopen(filename,"w");
+    if(fptr == NULL)
+    {
+        printf("Error while trying to write into the file!");   
+        exit(1);             
+    }
+
+    for(int i = 0; i < N; i++){
+        fprintf(fptr,"%d %d %d ",i+1,input_numbers[i],sol->size[i]);
+        list = malloc( sol->size[i] * sizeof(int) );
+        for(int j = 0; j < sol->size[i]; j++){
+            list[j] = sol->sol[i*col + j];
+        }
+        qsort(list, sol->size[i], sizeof(int), compare);
+        for(int j = 0; j < sol->size[i]; j++){
+            fprintf(fptr,"%d ",list[j]);
+        }
+        fprintf(fptr,"\n");
+        free(list);
+    }
+
+
+    list = malloc(B*E*sizeof(int));
+    int index = 0;
+    for(int i = 0; i < N; i++){
+        for(int j = 0; j < sol->size[i]; j++){
+            list[index] = sol->sol[i*(B*E-N) + j];
+            index++;
+        }
+    }
+    qsort(list, B*E, sizeof(int), compare);
+
+    int c = 0;
+    for(int i = 0; i < B; i++){
+        fprintf(fptr,"B%d %d\n",i+1,list[i * E]);
+        c += list[i * E];
+    }
+    fprintf(fptr,"COST %d\n",c);
+    free(list);
+    fclose(fptr);
+}
+
 Solution * deepcopy(Solution * sol, int N, int B, int E){
     int r = N;
     int c = B*E-N;
@@ -293,71 +339,74 @@ void * solve(void* args){
 
 int main(int argc, char const *argv[]){
     srand(time(NULL));
-    char loc[32];
-    int score_prof[10] ={5243, 8190, 3897, 9978, 4966, 15030, 7194, 239778, 229428, 226788};
 
-    for(int i = 1; i <= 10; i++){
-        snprintf(loc, 32, "../samples/data%d.dat", i);
-        FILE *f = fopen(loc,"r");
-        int bufferLength = 255;
-        char buffer[bufferLength];
-
-        fgets(buffer, bufferLength, f);
-        int N = atoi(buffer);
-        fgets(buffer, bufferLength, f);
-        int E = atoi(buffer);
-        fgets(buffer, bufferLength, f);
-        int B = atoi(buffer);
-
-        int * data = malloc(N * sizeof(int));
-        for(int j=0; j < N; j++){
-            fgets(buffer, bufferLength, f);
-            data[j] = atoi(buffer);
-        }
-
-        fclose(f);
-
-        Solution * init_sol = getInitSol(data,N,B,E);
-        pthread_t tid[MAX_THREAD];
-        SolverArgs args[MAX_THREAD];
-        void * temp[MAX_THREAD];
-
-        // CREATING THREADS
-        for(int j = 0; j < MAX_THREAD; j++){
-            args[j].input_numbers=data;
-            args[j].init_sol=init_sol;
-            args[j].N = N;
-            args[j].B = B;
-            args[j].E = E;
-            args[j].T = 100;
-            args[j].Tf = 0.01;
-            args[j].decreasing = 0.99;
-            args[j].step = 10000;
-            args[j].mix = (float)j * 1/(float)(MAX_THREAD-1);
-            pthread_create(&tid[j], NULL, solve, (void *)&args[j]); 
-        }
-
-        Solution * bestSolution;
-        int bestc = 99999999;
-        // PRINTING VALUE OF ALL THREAD WHEN THEY ARE ALL FINISHED
-        for(int j = 0; j < MAX_THREAD; j++){
-            pthread_join(tid[j], &temp[j]);
-            Solution * solution = (Solution*) temp[j];
-            int c = cost(solution, N, B, E);
-
-            if(c < bestc){
-                bestSolution = solution;
-                bestc = c;
-            } else {
-                freeSolution(solution);
-            }
-        }
-        int prof = score_prof[i-1];
-        int diff = prof - bestc;
-        bool correct = correctSolution(bestSolution,data, N,B,E);
-        float p = ( (float)(prof - bestc) / prof) * 100;
-        printf("Problem data%d.dat : %d vs %d | diff: %d => %.6f | correct: %d\n",i,bestc,prof,diff,p,correct);
-        printSol(bestSolution,N,B,E);
+    if(argc < 3){
+        printf("Not enough args");
+        exit(1); 
     }
+
+    FILE *f = fopen(argv[1],"r");
+    if(f == NULL){
+        printf("Can't read the file !");
+        exit(1); 
+    }
+
+    int bufferLength = 255;
+    char buffer[bufferLength];
+
+    fgets(buffer, bufferLength, f);
+    int N = atoi(buffer);
+    fgets(buffer, bufferLength, f);
+    int E = atoi(buffer);
+    fgets(buffer, bufferLength, f);
+    int B = atoi(buffer);
+
+    int * data = malloc(N * sizeof(int));
+    for(int j=0; j < N; j++){
+        fgets(buffer, bufferLength, f);
+        data[j] = atoi(buffer);
+    }
+
+    fclose(f);
+    Solution * init_sol = getInitSol(data,N,B,E);
+    pthread_t tid[MAX_THREAD];
+
+    SolverArgs args[MAX_THREAD];
+    void * temp[MAX_THREAD];
+
+    // CREATING THREADS
+    for(int j = 0; j < MAX_THREAD; j++){
+        args[j].input_numbers=data;
+        args[j].init_sol=init_sol;
+        args[j].N = N;
+        args[j].B = B;
+        args[j].E = E;
+        args[j].T = 100;
+        args[j].Tf = 0.01;
+        args[j].decreasing = 0.99;
+        args[j].step = 1000;
+        args[j].mix = (float)j * 1/(float)(MAX_THREAD-1);
+        pthread_create(&tid[j], NULL, solve, (void *)&args[j]); 
+    }
+
+    Solution * bestSolution;
+    int bestc = 99999999;
+    // PRINTING VALUE OF ALL THREAD WHEN THEY ARE ALL FINISHED
+    for(int j = 0; j < MAX_THREAD; j++){
+        pthread_join(tid[j], &temp[j]);
+        Solution * solution = (Solution*) temp[j];
+        int c = cost(solution, N, B, E);
+
+        if(c < bestc){
+            bestSolution = solution;
+            bestc = c;
+        } else {
+            freeSolution(solution);
+        }
+    }
+    bool correct = correctSolution(bestSolution,data, N,B,E);
+    printf("Solution: %d | correct: %d\n",bestc,correct);
+    printSolToFile(bestSolution,data,N,B,E,argv[2]);
     return 0;
 }
+
