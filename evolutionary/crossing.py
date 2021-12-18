@@ -1,6 +1,6 @@
 from random import *
 from copy import copy
-from algo_evo import split
+from mutation import split
 
 def crossingEureka(parent_1, parent_2, cross_proba, initial_list):
     """
@@ -108,8 +108,9 @@ def computeChild(child, initial_list):
     -------
     a new array of arrays of int, the 'child' solution.
     """
-    print("CHILD: ", child)
-    for i in len(child):
+    print("CHILD: ", len(child))
+    #MODIF ICI -> len(child)
+    for i in range(len(child)):
         child[i] = split(initial_list[i], child[i])
 
     return child
