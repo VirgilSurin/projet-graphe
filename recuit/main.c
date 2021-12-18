@@ -3,12 +3,29 @@
 #include <stdbool.h>
 #include <time.h>
 #include <math.h>
+#include <pthread.h>
+
+#define MAX_THREAD 12
 
 struct Solution{
-  int * sol;
-  int * size;
+    int * sol;
+    int * size;
 };
 typedef struct Solution Solution;
+
+struct SolverArgs{  
+    int * input_numbers;
+    Solution * init_sol;
+    int N;
+    int B;
+    int E;
+    float T;
+    float Tf;
+    float decreasing;
+    int step;
+    float mix;
+};
+typedef struct SolverArgs SolverArgs;
 
 float randomFloat()
 {
@@ -52,7 +69,12 @@ int cost(Solution* sol, int N, int B, int E){
 
 int * split(int x, int n, int m){
     int * res = malloc(n * sizeof(int));
-    if(n == 1){
+    if (x == 0){
+        for(int i = 0; i < n; i++){
+            res[i]=0;
+        }
+    }
+    else if(n == 1){
         res[0] = x;
     } else {
         int reste = x % m;
@@ -65,12 +87,17 @@ int * split(int x, int n, int m){
         }
         res[n-1] = total*m + reste;
     }
+
     return res;
 }
 
 int * equalSplit(int x, int n, int m){
     int * res = malloc(n * sizeof(int));
-    if( x%n == 0){
+    if(x == 0){
+        for(int i = 0; i < n; i++){
+            res[i] = 0;
+        }
+    }else if( x%n == 0){
         int part = x/n;
         for(int i = 0; i < n; i++){
             res[i] = part;
@@ -99,8 +126,9 @@ int * mixSplit(int x, int n, float mix){
     }
     free(eqSplit);
     free(spt);
+
     return res;
-}
+}   
 
 
 Solution* getInitSol(int * input_numbers, int N, int B, int E){
@@ -192,8 +220,14 @@ Solution * randomNeighbor(int * input_numbers,Solution * sol,
         j = rand()%N;
     }
     int total_split = sol->size[i] + sol->size[j];
-    int i_split = rand()%(total_split-1) + 1; 
-    int j_split = total_split - i_split;
+    int i_split;
+    int j_split;
+    if(total_split > B*E-N){
+        i_split = total_split/2;
+    } else {
+        i_split = rand()%(total_split-1) + 1; 
+    }
+    j_split = total_split - i_split;
 
     int * new_i = mixSplit(input_numbers[i], i_split, mix);
     int * new_j = mixSplit(input_numbers[j], j_split, mix);
@@ -217,8 +251,18 @@ float prob(float de, float T){
     return pow(2.718,de/T);
 }
 
-Solution * solve(int * input_numbers,Solution * init_sol,
-    int N,int B,int E,float T,float Tf,float decreasing,int step,float mix){
+void * solve(void* args){
+    SolverArgs * input = (SolverArgs*) args;
+    int * input_numbers = input->input_numbers;
+    Solution * init_sol = input->init_sol;
+    int N = input->N;
+    int B = input->B;
+    int E = input->E;
+    float T = input->T;
+    float Tf = input->Tf;
+    float decreasing = input->decreasing;
+    int step = input->step;
+    float mix = input->mix;
 
     Solution * current_sol = deepcopy(init_sol,N,B,E);
     int current_cost = cost(init_sol,N,B,E);
@@ -244,7 +288,7 @@ Solution * solve(int * input_numbers,Solution * init_sol,
         }
         T *= decreasing;
     }
-    return best_sol;
+    return (void *) best_sol;
 }
 
 int main(int argc, char const *argv[]){
@@ -272,17 +316,48 @@ int main(int argc, char const *argv[]){
         }
 
         fclose(f);
+
         Solution * init_sol = getInitSol(data,N,B,E);
-        Solution * solution = solve(data,init_sol,N,B,E,200,0.001,0.99,1000,0.75);
-        int c = cost(solution, N, B, E);
+        pthread_t tid[MAX_THREAD];
+        SolverArgs args[MAX_THREAD];
+        void * temp[MAX_THREAD];
+
+        // CREATING THREADS
+        for(int j = 0; j < MAX_THREAD; j++){
+            args[j].input_numbers=data;
+            args[j].init_sol=init_sol;
+            args[j].N = N;
+            args[j].B = B;
+            args[j].E = E;
+            args[j].T = 100;
+            args[j].Tf = 0.01;
+            args[j].decreasing = 0.99;
+            args[j].step = 10000;
+            args[j].mix = (float)j * 1/(float)(MAX_THREAD-1);
+            pthread_create(&tid[j], NULL, solve, (void *)&args[j]); 
+        }
+
+        Solution * bestSolution;
+        int bestc = 99999999;
+        // PRINTING VALUE OF ALL THREAD WHEN THEY ARE ALL FINISHED
+        for(int j = 0; j < MAX_THREAD; j++){
+            pthread_join(tid[j], &temp[j]);
+            Solution * solution = (Solution*) temp[j];
+            int c = cost(solution, N, B, E);
+
+            if(c < bestc){
+                bestSolution = solution;
+                bestc = c;
+            } else {
+                freeSolution(solution);
+            }
+        }
         int prof = score_prof[i-1];
-        int diff = prof - c;
-        bool correct = correctSolution(solution,data, N,B,E);
-        float p = ( (float)(prof - c) / prof) * 100;
-        printf("Problem data%d.dat : %d vs %d | diff: %d => %.6f | correct: %d\n",i,c,prof,diff,p,correct);
-        printSol(solution,N,B,E);
+        int diff = prof - bestc;
+        bool correct = correctSolution(bestSolution,data, N,B,E);
+        float p = ( (float)(prof - bestc) / prof) * 100;
+        printf("Problem data%d.dat : %d vs %d | diff: %d => %.6f | correct: %d\n",i,bestc,prof,diff,p,correct);
+        printSol(bestSolution,N,B,E);
     }
-
-
     return 0;
 }
