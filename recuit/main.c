@@ -197,7 +197,7 @@ void printSolToFile(Solution* sol, int * input_numbers, int N, int B, int E,cons
     fptr = fopen(filename,"w");
     if(fptr == NULL)
     {
-        printf("Error while trying to write into the file!");   
+        printf("Error while trying to write into the file! \n");   
         exit(1);             
     }
 
@@ -341,13 +341,13 @@ int main(int argc, char const *argv[]){
     srand(time(NULL));
 
     if(argc < 3){
-        printf("Not enough args");
+        printf("Not enough args\n");
         exit(1); 
     }
 
     FILE *f = fopen(argv[1],"r");
     if(f == NULL){
-        printf("Can't read the file !");
+        printf("Can't read the file !\n");
         exit(1); 
     }
 
