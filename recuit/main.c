@@ -67,7 +67,7 @@ int cost(Solution* sol, int N, int B, int E){
     return c;
 }
 
-int * split(int x, int n, int m){
+int * split(int x, int n){
     int * res = malloc(n * sizeof(int));
     if (x == 0){
         for(int i = 0; i < n; i++){
@@ -77,21 +77,25 @@ int * split(int x, int n, int m){
     else if(n == 1){
         res[0] = x;
     } else {
-        int reste = x % m;
-        int total = x / m;
-        for(int i = 0; i < n-1; i++){
-            int h = total-(n-i);
-            int rnd = rand()%h + 1; 
-            total -= rnd;
-            res[i] = rnd*m;
+        int total = x;
+        if(total == n){
+            for(int i = 0; i < n; i++){
+                res[i] = 1;
+            }
+        } else {
+            for(int i = 0; i < n-1; i++){
+                int h = total-(n-i);
+                int rnd = rand()%h + 1; 
+                total -= rnd;
+                res[i] = rnd;
+            }
+            res[n-1] = total;
         }
-        res[n-1] = total*m + reste;
     }
-
     return res;
 }
 
-int * equalSplit(int x, int n, int m){
+int * equalSplit(int x, int n){
     int * res = malloc(n * sizeof(int));
     if(x == 0){
         for(int i = 0; i < n; i++){
@@ -119,8 +123,8 @@ int * equalSplit(int x, int n, int m){
 int * mixSplit(int x, int n, float mix){
     int * res = malloc(n * sizeof(int));
     int px = x*mix;
-    int * eqSplit = equalSplit(px,n,1);
-    int * spt = split(x - px,n,1);
+    int * eqSplit = equalSplit(px,n);
+    int * spt = split(x - px,n);
     for(int i = 0; i < n; i++){
         res[i] = eqSplit[i] + spt[i];
     }
@@ -149,7 +153,7 @@ Solution* getInitSol(int * input_numbers, int N, int B, int E){
         int index = i%N;
         int end = size[index] - 1;
         int num = sol[index*(B*E-N) + end];
-        int* num_split = equalSplit(num, 2, 1);
+        int* num_split = equalSplit(num, 2);
         sol[index*(B*E-N) + end] = num_split[0];
         sol[index*(B*E-N) + end + 1] = num_split[1];
         size[index] += 1;
@@ -298,6 +302,7 @@ float prob(float de, float T){
 }
 
 void * solve(void* args){
+    srand(time(NULL));
     SolverArgs * input = (SolverArgs*) args;
     int * input_numbers = input->input_numbers;
     Solution * init_sol = input->init_sol;
@@ -338,7 +343,6 @@ void * solve(void* args){
 }
 
 int main(int argc, char const *argv[]){
-    srand(time(NULL));
 
     if(argc < 3){
         printf("Not enough args\n");
@@ -393,6 +397,7 @@ int main(int argc, char const *argv[]){
     int bestc = 99999999;
     // PRINTING VALUE OF ALL THREAD WHEN THEY ARE ALL FINISHED
     for(int j = 0; j < MAX_THREAD; j++){
+        
         pthread_join(tid[j], &temp[j]);
         Solution * solution = (Solution*) temp[j];
         int c = cost(solution, N, B, E);
