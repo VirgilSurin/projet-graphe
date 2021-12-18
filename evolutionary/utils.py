@@ -46,7 +46,7 @@ def generate_pop(size, N, B, E, data):
 
     """
     pop = []
-    for i in range(size):
+    while len(pop) != size:
         ind = []
         for k in range(len(data)):
             ind.append([data[k]])
@@ -92,7 +92,8 @@ def generate_pop(size, N, B, E, data):
                 left-=1
 
         #on rajoute l'individu obtenu à la population
-        pop.append(ind)
+        if ind not in pop:
+            pop.append(ind)
     return pop
 
 def get_cost(ind,N, B, E):

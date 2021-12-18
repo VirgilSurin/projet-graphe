@@ -29,6 +29,8 @@ def generate_random_neighbor(sol, data):
     # now we replace
     neighbor[i] = new_i
     neighbor[j] = new_j
+    for i in range(len(neighbor)):
+        neighbor[i].sort(reverse=True)
     return neighbor
     
 #for local search
@@ -99,9 +101,17 @@ def next_gen(p1, p2, c1, c2, N, B, E):
     next_g = []
     cand = [p1, p2, c1, c2]
     costs = [get_cost(p1,N,B,E), get_cost(p2,N,B,E), get_cost(c1,N,B,E), get_cost(c2,N,B,E)]
-    while len (next_g) != 2: 
+    while len(next_g) < 2 and len(cand) > 0: 
         min1 = min(costs)
         index = costs.index(min1)
-        costs.pop(index)
-        next_g.append(cand.pop(index))
+        if cand[index] not in next_g:
+            costs.pop(index)
+            next_g.append(cand.pop(index))
+        else:
+            costs.pop(index)
+            cand.pop(index)
+    if len(next_g) < 2:
+        cand = [p1, p2, c1, c2]
+        shuffle(cand)
+        next_g.append(cand[0])
     return next_g

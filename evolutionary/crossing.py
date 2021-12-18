@@ -19,13 +19,13 @@ def crossingEureka(parent_1, parent_2, cross_proba, initial_list):
     """
     proba = random() #generates probabilité of crossing
 
-    if proba > proba_cross: #probability is not checked, no crossing is done
+    if proba > cross_proba: #probability is not checked, no crossing is done
         return parent_1, parent_2
     if not(len(parent_1) == len(parent_2)): #see exception message
         raise ValueError("Illegal arguments: sizes do not match!")
     
-    child_1 = conceiveChild(parent_1, parent_2) #children are currently list of numbers of splits to make to the initial value
-    child_2 = conceiveChild(parent_2, parent_1)
+    child_1 = conceiveChild(parent_1, parent_2, initial_list) #children are currently list of numbers of splits to make to the initial value
+    child_2 = conceiveChild(parent_2, parent_1, initial_list)
         
     child_1 = computeChild(child_1, initial_list) #children are now proper solutions
     child_2 = computeChild(child_2, initial_list)
@@ -33,7 +33,7 @@ def crossingEureka(parent_1, parent_2, cross_proba, initial_list):
     return child_1, child_2
 
 
-def conceiveChild(parent_1, parent_2):
+def conceiveChild(parent_1, parent_2, initial_list):
     """
     Crosses 2 parent solutions to get 2 children solutions.
     
@@ -48,20 +48,20 @@ def conceiveChild(parent_1, parent_2):
     -------
     a new array of int, the numbers of split to compute 'children' solutions.
     """
-    
+    print("DATA: ", initial_list)
     child = [len(splitted_value) for splitted_value in parent_2] #initialise child 1 as parent 2 lengths for crossing with parent 1
     #works as a window, sliding
     maximum = max(parent_2)
     minimum = min(parent_2)
-    
+    print("MAX MIN: ", maximum, minimum)
     i = 0 #init window
     while (len(child) - i) >= 2: #while untouched part size remains greater than the size of the window (that being 2)
-        if isGreaterThreshold(child[i],):
+        if isGreaterThreshold(initial_list[i],maximum, minimum):
             if len(parent_1[i]) > child[i]:
                 compensation_buffer = len(parent_1[i]) - child[i]
                 child[i]   += compensation_buffer
                 child[i+1] -= compensation_buffer #compensate so as to remain and eligible solution
-        elif not(isGreaterThreshold(child[i])):
+        elif not(isGreaterThreshold(child[i], maximum, minimum)):
             if len(parent_1[i]) < child[i]:
                 compensation_buffer = child[i] - len(parent_1[i])
                 child[i]   -= compensation_buffer
@@ -88,8 +88,7 @@ def isGreaterThreshold(value, maximum, minimum):
     a boolean: True if the value is strictly greater than the mean of min and max
           else False
     """
-
-    mean = (maximum + minimum)/2
+    mean = (maximum[0] + minimum[0])/2
 
     return (value > mean)
 
@@ -109,9 +108,9 @@ def computeChild(child, initial_list):
     -------
     a new array of arrays of int, the 'child' solution.
     """
-
-    for i in child:
+    print("CHILD: ", child)
+    for i in len(child):
         child[i] = split(initial_list[i], child[i])
-        
+
     return child
     

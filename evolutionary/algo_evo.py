@@ -38,7 +38,8 @@ def evolutionnary(data, N, B, E, size, nb_gen, nb_neighbor, cross_prob, mutation
         parents = select_parents(pop, size//2,N, B,E)
         pop = []
         for p1, p2 in parents:
-            c1, c2 = cross_parents(p1, p2, cross_prob)
+            #c1, c2 = cross_parents(p1, p2, cross_prob)
+            c1, c2 = crossingEureka(p1, p2, cross_prob, data)
             c1, c2 = normalize_children(c1, c2, B, E)
             c1 = mutate(c1, mutation_prob ,data, nb_neighbor,N, B, E)
             c2 = mutate(c2, mutation_prob, data, nb_neighbor,N, B, E)
@@ -50,6 +51,12 @@ def evolutionnary(data, N, B, E, size, nb_gen, nb_neighbor, cross_prob, mutation
     for item in pop:
         print(item)
         print(calculate_e(item), "| cost: ", get_cost(item, N, B, E))
+    costs = [get_cost(i, N, B, E) for i in pop]
+    min_value = min(costs)
+    index = costs.index(min_value)
+    print("\n\n\nBest")
+    print(pop[index])
+    print("Cost: ", get_cost(pop[index], N, B, E))
 """
 
 """
@@ -68,7 +75,7 @@ if __name__ == "__main__":
     #Proba croisement: [0.5,0.9]
     cross_prob = 0.85
     #Proba de mutation: [0.05,0.1]
-    mutation_prob = 0.065
+    mutation_prob = 0.01
 
     evolutionnary(data, N, B, E, size, nb_gen, nb_neighbor, cross_prob, mutation_prob)
 
