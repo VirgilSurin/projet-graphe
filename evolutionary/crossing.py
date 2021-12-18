@@ -1,4 +1,4 @@
-import random
+from random import *
 from copy import copy
 from algo_evo import split
 
@@ -17,7 +17,7 @@ def crossingEureka(parent_1, parent_2, cross_proba, initial_list):
     -------
     2 new arrays of arrays of int, the 'children' solutions.
     """
-    proba = random.randint(O.5, O.9) #generates probabilité of crossing
+    proba = random() #generates probabilité of crossing
 
     if proba > proba_cross: #probability is not checked, no crossing is done
         return parent_1, parent_2
@@ -66,7 +66,7 @@ def conceiveChild(parent_1, parent_2):
                 compensation_buffer = child[i] - len(parent_1[i])
                 child[i]   -= compensation_buffer
                 child[i+1] += compensation_buffer #see up
-        i++ # TODO: may need to be +2 as to negate exponential compensation
+        i+=1 # TODO: may need to be +2 as to negate exponential compensation
     return child
     
 
