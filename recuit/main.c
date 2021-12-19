@@ -54,7 +54,7 @@ int cost(Solution* sol, int N, int B, int E){
     int index = 0;
     for(int i = 0; i < N; i++){
         for(int j = 0; j < sol->size[i]; j++){
-            list[index] = sol->sol[i*(B*E-N) + j];
+            list[index] = sol->sol[i*(B*E) + j];
             index++;
         }
     }
@@ -137,7 +137,7 @@ int * mixSplit(int x, int n, float mix){
 
 Solution* getInitSol(int * input_numbers, int N, int B, int E){
     int r = N;
-    int c = B*E-N;
+    int c = B*E;
     int* sol = malloc((r * c) * sizeof(int));
     int* size = malloc(N * sizeof(int));
     Solution* solution = malloc(sizeof(Solution));
@@ -152,10 +152,10 @@ Solution* getInitSol(int * input_numbers, int N, int B, int E){
     for(int i = 0; i < (B * E - N); i++){
         int index = i%N;
         int end = size[index] - 1;
-        int num = sol[index*(B*E-N) + end];
+        int num = sol[index*c + end];
         int* num_split = equalSplit(num, 2);
-        sol[index*(B*E-N) + end] = num_split[0];
-        sol[index*(B*E-N) + end + 1] = num_split[1];
+        sol[index*c + end] = num_split[0];
+        sol[index*c + end + 1] = num_split[1];
         size[index] += 1;
         free(num_split);
     }
@@ -163,7 +163,7 @@ Solution* getInitSol(int * input_numbers, int N, int B, int E){
 }
 
 bool correctSolution(Solution * sol, int * input_numbers, int N, int B, int E){
-    int c = B*E-N;
+    int c = B*E;
     int count=0;
     for(int i = 0; i < N; i++){
         int sum = 0;
@@ -187,7 +187,7 @@ void printSol(Solution* sol, int N, int B, int E){
         printf("[");
         int len=sol->size[i];
         for(int j=0; j<len; j++){
-            printf("%d,",sol->sol[i*(B*E-N) + j]);
+            printf("%d,",sol->sol[i*(B*E) + j]);
         }
         printf("]");
     }
@@ -195,7 +195,7 @@ void printSol(Solution* sol, int N, int B, int E){
 }
 
 void printSolToFile(Solution* sol, int * input_numbers, int N, int B, int E,const char* filename){
-    int col = B*E-N;
+    int col = B*E;
     FILE *fptr;
     int* list;
     fptr = fopen(filename,"w");
@@ -224,7 +224,7 @@ void printSolToFile(Solution* sol, int * input_numbers, int N, int B, int E,cons
     int index = 0;
     for(int i = 0; i < N; i++){
         for(int j = 0; j < sol->size[i]; j++){
-            list[index] = sol->sol[i*(B*E-N) + j];
+            list[index] = sol->sol[i*(B*E) + j];
             index++;
         }
     }
@@ -242,7 +242,7 @@ void printSolToFile(Solution* sol, int * input_numbers, int N, int B, int E,cons
 
 Solution * deepcopy(Solution * sol, int N, int B, int E){
     int r = N;
-    int c = B*E-N;
+    int c = B*E;
     Solution * copy = malloc(sizeof(Solution));
     copy->sol = malloc((r * c) * sizeof(int));
     copy->size = malloc(N * sizeof(int));
@@ -259,7 +259,7 @@ Solution * deepcopy(Solution * sol, int N, int B, int E){
 
 Solution * randomNeighbor(int * input_numbers,Solution * sol, 
     int N, int B, int E, float mix){
-    int c = B*E-N;
+    int c = B*E;
     Solution * neighbor = deepcopy(sol,N,B,E);
     //we generate a neighbor by swaping the number of split of two number
     //we choose two number to swap
@@ -270,14 +270,8 @@ Solution * randomNeighbor(int * input_numbers,Solution * sol,
         j = rand()%N;
     }
     int total_split = sol->size[i] + sol->size[j];
-    int i_split;
-    int j_split;
-    if(total_split > B*E-N){
-        i_split = total_split/2;
-    } else {
-        i_split = rand()%(total_split-1) + 1; 
-    }
-    j_split = total_split - i_split;
+    int i_split = rand()%(total_split-1) + 1;     
+    int j_split = total_split - i_split;
 
     int * new_i = mixSplit(input_numbers[i], i_split, mix);
     int * new_j = mixSplit(input_numbers[j], j_split, mix);
