@@ -1,19 +1,215 @@
 \documentclass{beamer}
 
-\title{Sample title}
-\author{Anonymous}
-\institute{Overleaf}
-\date{2021}
+\title{Projet Graphes et Optimisation Combinatoire}
+\author{Nicolas Vallois, Matilde Subtil, Virgil Surin, Simon Michel}
+\institute{Université de Mons}
+\date{20 décembre 2021}
 
-\usetheme{Boadilla}
+\usetheme{Copenhagen}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{mdwlist}
+\usepackage{marvosym}
+\usepackage{fancyvrb}
+\usepackage{listings}
 
 \begin{document}
 
 \frame{\titlepage}
 
+
 \begin{frame}
-\frametitle{Sample frame title}
-This is some text in the first frame. This is some text in the first frame. This is some text in the first frame.
+    \frametitle{Table des Matières}
+    \tableofcontents
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{Choix de la métaheuristique}
+    3 métaheuristiques sur lesquelles nous avons travaillé:
+    \begin{itemize}
+        \item Recherche locale
+        \item Algorithme Evolutionnaire
+        \item Recuit Simulé
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Méthodes rejetées}
+    \begin{block}{Recherche Locale}
+        Introduction au problème.
+        Création d'une solution initiale aléatoire.
+        Création d'un voisinage avec toutes les découpe possible (peu optimisé).
+        \MVRightarrow{} Mauvais résultats car on reste sur le minimum local (intensification pure)
+    \end{block}
+    
+\end{frame}
+
+\begin{frame}
+    \begin{block}{Algorithme Évolutionnaire}
+        Intention d'explorer au moins deux métaheuristiques afin de les comprarer ou les combiner. \\~\\
+        Étapes:
+        \begin{itemize}
+            \item Création d'une population aléatoire d'individus (solutions) 
+            \item Sélection des parents par tournoi
+            \item Croisement à un point 
+            \item Hybridation par recherche locale
+            \item Choix de la génération suivante par le meilleur coût.
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{Motivation pour le choix du recuit simulé}
+    Nous avons choisi le recuit simulé car il donnait de très bons résultats, tout en étant simple à implémenter.\\~\\
+
+    L'adaptation de l'algorithme évolutionnaire demande beaucoup de fonctions à paramétrer qui impactent la solution: création de la population initiale, croisement qui peut rendre une solution indamissible, recherche locale pour l'hybridation + paramètres.\\~\\
+
+    Tandis que dans le recuit, il faut uniquement adapter les paramètres propres au recuit (température, ...) et une fonction de création d'un voisin aléatoire.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Implémentation}
+    Prototype en python pour une première implémentation du solveur.\\~\\
+
+    Passage en C car plus rapide. Ajout de threads pour exécuter le recuit plusieurs fois en parallèle et garder la meilleure solution de ces recuits.
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Choix d'un voisin}
+    
+\end{frame}
+
+\begin{frame}
+    \frametitle{Split Équilibré et Split Aléatoire}
+    \begin{block}{Split Équilibré}
+    Divise de façon équitable un entier x en n entiers.
+    \MVRightarrow{} Donne de bons résultats mais on peut faire encore mieux en éliminant la contrainte d'équilibre.
+    \end{block}
+
+    \begin{block}{Split Aléatoire}
+    Divise de façon aléatoire un entier x en n entiers.
+    \MVRightarrow{} Donne parfois de très bons résultats mais aussi parfois de très mauvais. Il divise en trop petit nombres.
+    \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Exemples}
+    \begin{exampleblock}{Split Équilibré - data1.dat}
+        \begin{lstlisting}[basicstyle=\small]
+        1 7660 4 1915 1915 1915 1915 
+        2 7290 4 1823 1823 1822 1822 
+        3 7040 4 1760 1760 1760 1760 
+        4 6890 4 1723 1723 1722 1722 
+        5 5860 9 652 651 651 651 651 651 651 651 651 
+        6 5090 5 1018 1018 1018 1018 1018 
+        7 4640 5 928 928 928 928 928 
+        8 3830 2 1915 1915 
+        9 3460 2 1730 1730 
+        10 580 1 580 
+        B1 1915
+        B2 1760
+        B3 1018
+        B4 652
+        COST 5345
+        \end{lstlisting}
+    \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Exemples}
+    \begin{exampleblock}{Split Aléatoire - Mauvais cas - data1.dat}
+        \begin{lstlisting}[basicstyle=\small]
+        1 7660 2 4017 3643 
+        2 7290 6 4093 1434 1251 205 192 115 
+        3 7040 6 4070 1413 1281 141 118 17 
+        4 6890 3 4091 1418 1381 
+        5 5860 6 3951 1313 177 161 154 104 
+        6 5090 2 4043 1047 
+        7 4640 2 3345 1295 
+        8 3830 1 3830 
+        9 3460 11 3447 2 2 2 1 1 1 1 1 1 1 
+        10 580 1 580 
+        B1 4093
+        B2 1434
+        B3 205
+        B4 2
+        COST 5734
+        \end{lstlisting}
+    \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Exemples}
+    \begin{exampleblock}{Split Aléatoire - Bon cas - data2.dat}
+        \begin{lstlisting}[basicstyle=\tiny]
+        1 9210 3 3136 3055 3019 
+        2 9060 3 3071 3035 2954 
+        3 8820 4 4285 2979 907 649 
+        4 8350 2 4268 4082 
+        5 7260 2 4213 3047 
+        6 6950 2 3977 2973 
+        7 5180 2 4272 908 
+        8 4050 1 4050 
+        9 3890 1 3890 
+        10 3670 2 2888 782 
+        11 3310 1 3310 
+        12 3050 1 3050 
+        13 2340 3 911 776 653 
+        14 1790 2 912 878 
+        15 930 1 930 
+        B1 4285
+        B2 3071
+        B3 930
+        COST 8286
+        \end{lstlisting}
+    \end{exampleblock}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Split Mix}
+    Vu que chacun a un avantage dans certains cas, nous avons décidé de mélanger les deux méthode de SPlit. La façon dont ils sont mélangés se repose sur un paramètre "mix" qui défini la partie de x qui va dans le split équilibré et l'autre partie de x va dans le split aléatoire.
+    On a que mix $\in [0,1]$. Si mix se rapproche de 0, la découpe sera plutôt aléatoire. Si mix se rapproche de 1, la découpe sera plutôt équilibrée. \\~\\
+
+    On ne connait pas la bonne valeur de mix pour chaque problème, donc on fait tourner plusieurs threads en parallèles avec une valeur de mix qui augmente de façon linéaire (ex: de 0 à 1 par pas de 0.25 si on a 5 threads).
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Exemples}
+    \begin{exampleblock}{Split Mix - data2.dat}
+        \begin{lstlisting}[basicstyle=\tiny]
+        1 9210 3 4182 4126 902 
+        2 9060 3 3078 2993 2989 
+        3 8820 3 4006 3917 897 
+        4 8350 2 4179 4171 
+        5 7260 2 4182 3078 
+        6 6950 2 4162 2788 
+        7 5180 2 2734 2446 
+        8 4050 1 4050 
+        9 3890 1 3890 
+        10 3670 2 2891 779 
+        11 3310 2 2896 414 
+        12 3050 1 3050 
+        13 2340 3 924 878 538 
+        14 1790 2 927 863 
+        15 930 1 930 
+        B1 4182
+        B2 3078
+        B3 930
+        COST 8190
+        \end{lstlisting}
+    \end{exampleblock}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Choix de la température}
+    Nous avons plusieurs paramètres.
+    La température initiale: elle ne doit pas être trop élevée sinon le début de la recherche sera dans une diversification pure.
+    La température finale: elle ne doit pas être trop basse sinon on passe la fin de la recherche dans une intensification pure.
+    On doit déterminer les bonnes valeurs pour ne pas perdre de temps.
 \end{frame}
 
 \end{document}

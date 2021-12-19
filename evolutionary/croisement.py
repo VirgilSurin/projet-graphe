@@ -129,21 +129,23 @@ def reequilibrate(c,l, B, E):
     -------
     c : admissible child
     """
+    voyager = len(c)-1
     while l > B*E:
-        voyager = randint(0, len(c)-1)
         if len(c[voyager]) >= 2:
             c[voyager][-2] += c[voyager][-1]
             c[voyager].pop()
             c[voyager].sort(reverse=True)
             l = calculate_e(c)
-        voyager = (voyager + 1)%len(c)
+        voyager = (voyager - 1)%len(c)
+    voyager = 0
     while l < B*E:
-        voyager = randint(0, len(c)-1)
         if c[voyager][0]//2 + c[voyager][0] %2 > 2:
             newv1 = c[voyager].pop(0)
             c[voyager].append(newv1//2 + newv1 %2)
             c[voyager].append(newv1//2)
             c[voyager].sort(reverse=True)
             l = calculate_e(c)
+            voyager = (voyager + 1)%len(c)
+
     return c
 

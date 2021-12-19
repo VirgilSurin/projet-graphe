@@ -28,7 +28,29 @@ def get_data(datafile):
     B = l.pop(0)
     return l, N, B, E
    
+def get_data_from_recuit(datafile):
+    pass
 
+
+def print_sol(sol, data, N, B, E):
+    for i in range(len(sol)):
+        s = str(i+1) +" "+ str(data[i]) + " "+ str(len(sol[i]))
+        for j in range(len(sol[i])):
+            s += " " + str(sol[i][j])
+        print(s)
+
+    l = []
+    for item in sol:
+        for elem in item:
+            l.append(elem)
+    l.sort(reverse=True)
+    cost=0
+    for i in range(B):
+        max_index = i*E
+        s = "B"+str(i+1)+ " " + str(l[max_index])
+        print(s)
+    print("COST ", get_cost(sol, N, B, E))
+    
 
 def generate_pop(size, N, B, E, data):
     """Randomly generates a population of solutions
