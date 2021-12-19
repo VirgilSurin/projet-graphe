@@ -29,8 +29,31 @@ def get_data(datafile):
     return l, N, B, E
    
 def get_data_from_recuit(datafile):
-    pass
+    l = []
+    with open(datafile) as f:
+        i = 0
+        for line in f:
+            if line[0] in [str(x) for x in range(1,10)]:
+                l.append(line[0:-2])
+            i += 1
 
+    for i in range(len(l)):
+        l[i] = l[i].split()
+        l[i] = l[i][3:]
+        l[i] = [int(l[i][k]) for k in range(len(l[i]))]
+    print(l)
+    return l
+
+def create_pop_from_recuit():
+    pop = []
+    for i in range(1,11):
+        datafile = "outputrecuit/output"+str(i)+".txt"
+        ind = get_data_from_recuit(datafile)
+        if ind not in pop:
+            pop.append(ind)
+    print("POP",pop)
+    size = len(pop)
+    return pop, size
 
 def print_sol(sol, data, N, B, E):
     for i in range(len(sol)):

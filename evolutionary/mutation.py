@@ -61,6 +61,9 @@ def split(x, n):
     return res
 
 
+
+
+
 def mutate(c, mutation_prob, data, nb_neighbor,N, B, E):
     prob = random()
     if prob > mutation_prob:

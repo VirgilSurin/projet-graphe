@@ -12,6 +12,7 @@
 \usepackage{marvosym}
 \usepackage{fancyvrb}
 \usepackage{listings}
+\usepackage[francais]{babel}
 
 \begin{document}
 
@@ -19,14 +20,8 @@
 
 
 \begin{frame}
-    \frametitle{Table des Matières}
-    \tableofcontents
-\end{frame}
-
-
-\begin{frame}
     \frametitle{Choix de la métaheuristique}
-    3 métaheuristiques sur lesquelles nous avons travaillé:
+    3 méthodes sur lesquelles nous avons travaillé:
     \begin{itemize}
         \item Recherche locale
         \item Algorithme Evolutionnaire
@@ -40,15 +35,16 @@
     \begin{block}{Recherche Locale}
         Introduction au problème.
         Création d'une solution initiale aléatoire.
-        Création d'un voisinage avec toutes les découpe possible (peu optimisé).
+        Création d'un voisinage avec toutes les découpe possible (peu optimisé).\\~\\
         \MVRightarrow{} Mauvais résultats car on reste sur le minimum local (intensification pure)
     \end{block}
     
 \end{frame}
 
 \begin{frame}
+    \frametitle{Méthodes rejetées}
     \begin{block}{Algorithme Évolutionnaire}
-        Intention d'explorer au moins deux métaheuristiques afin de les comprarer ou les combiner. \\~\\
+        Intention d'explorer au moins deux métaheuristiques afin de les comparer ou les combiner. \\~\\
         Étapes:
         \begin{itemize}
             \item Création d'une population aléatoire d'individus (solutions) 
@@ -57,17 +53,43 @@
             \item Hybridation par recherche locale
             \item Choix de la génération suivante par le meilleur coût.
         \end{itemize}
+        Abandon au stade prototype car: peu de recherche sur les paramètres à utiliser en fonction du problème, mauvaise mise en place de la recherche locale et plus lent que le recuit quand on obtient des résultats similaires.
     \end{block}
 \end{frame}
 
+\begin{frame}[fragile]
+    \frametitle{Méthodes rejetées}
+    Recherche locale peu efficace basée sur des découpes équilibrées ! Ce qui empêche de trouver des voisins plus intéressants.
+    \begin{exampleblock}{Paramètres}
+        Taille population: 100, générations: 500\\
+        Proba croisements: 0.85, proba hybridation: 0.01
+    \begin{lstlisting}[basicstyle=\tiny]
+        1 7660 5 1915 1915 1915 958 957
+        2 7290 7 1042 1042 1042 1041 1041 1041 1041
+        3 7040 4 1760 1760 1760 1760
+        4 6890 4 1723 1723 1722 1722
+        5 5860 3 1954 1953 1953
+        6 5090 9 566 566 566 566 566 565 565 565 565
+        7 4640 3 1791 1790 1059
+        8 3830 2 1915 1915
+        9 3460 2 1730 1730
+        10 580 1 580
+        B1 1954
+        B2 1760
+        B3 1059
+        B4 580
+        COST  5353
+    \end{lstlisting}
+    \end{exampleblock}
+\end{frame}
 
 \begin{frame}
     \frametitle{Motivation pour le choix du recuit simulé}
     Nous avons choisi le recuit simulé car il donnait de très bons résultats, tout en étant simple à implémenter.\\~\\
 
-    L'adaptation de l'algorithme évolutionnaire demande beaucoup de fonctions à paramétrer qui impactent la solution: création de la population initiale, croisement qui peut rendre une solution indamissible, recherche locale pour l'hybridation + paramètres.\\~\\
+    L'adaptation de l'algorithme évolutionnaire demande beaucoup de fonctions à paramétrer qui impactent la solution: création de la population initiale, croisement qui peut rendre une solution indamissible(donc rééquilibrage nécessaire), recherche locale pour l'hybridation + paramètres.\\~\\
 
-    Tandis que dans le recuit, il faut uniquement adapter les paramètres propres au recuit (température, ...) et une fonction de création d'un voisin aléatoire.
+    Tandis que dans le recuit, il faut uniquement adapter les paramètres propres au recuit (températures, ...) et une fonction de création d'un voisin aléatoire.
 \end{frame}
 
 \begin{frame}
@@ -80,18 +102,18 @@
 
 \begin{frame}
     \frametitle{Choix d'un voisin}
-    
+    Pour choisir un voisin d'une solution: on choisit aléatoirement deux nombres i et j découpés de la solution. Ensuite on additionne le nombre de découpe et l'on divise ce nombre en deux d'une façon aléatoire: on obtient i\_split et j\_split. Une fois qu'on a nos deux nombres de découpe, on doit choisir une méthode de découpe (voir slide suivant) qui travaille sur les données d'entrée i et j du problème en découpant i par i\_split et j par j\_split. 
 \end{frame}
 
 \begin{frame}
     \frametitle{Split Équilibré et Split Aléatoire}
     \begin{block}{Split Équilibré}
-    Divise de façon équitable un entier x en n entiers.
+    Divise de façon équitable un entier x en n entiers.\\~\\
     \MVRightarrow{} Donne de bons résultats mais on peut faire encore mieux en éliminant la contrainte d'équilibre.
     \end{block}
 
     \begin{block}{Split Aléatoire}
-    Divise de façon aléatoire un entier x en n entiers.
+    Divise de façon aléatoire un entier x en n entiers.\\~\\
     \MVRightarrow{} Donne parfois de très bons résultats mais aussi parfois de très mauvais. Il divise en trop petit nombres.
     \end{block}
 \end{frame}
@@ -171,10 +193,10 @@
 
 \begin{frame}
     \frametitle{Split Mix}
-    Vu que chacun a un avantage dans certains cas, nous avons décidé de mélanger les deux méthode de SPlit. La façon dont ils sont mélangés se repose sur un paramètre "mix" qui défini la partie de x qui va dans le split équilibré et l'autre partie de x va dans le split aléatoire.
+    Vu que chacun a un avantage dans certains cas, nous avons décidé de mélanger les deux méthode de Split. La façon dont ils sont mélangés se repose sur un paramètre "mix" qui défini la partie de x qui va dans le split équilibré et l'autre partie de x va dans le split aléatoire.
     On a que mix $\in [0,1]$. Si mix se rapproche de 0, la découpe sera plutôt aléatoire. Si mix se rapproche de 1, la découpe sera plutôt équilibrée. \\~\\
 
-    On ne connait pas la bonne valeur de mix pour chaque problème, donc on fait tourner plusieurs threads en parallèles avec une valeur de mix qui augmente de façon linéaire (ex: de 0 à 1 par pas de 0.25 si on a 5 threads).
+    On ne connait pas la bonne valeur de mix pour chaque problème, donc on fait tourner plusieurs threads en parallèles avec une valeur de mix qui augmente de façon linéaire entre chaque thread (ex: de 0 à 1 par pas de 0.25 si on a 5 threads).
 \end{frame}
 
 \begin{frame}[fragile]
@@ -205,11 +227,59 @@
 \end{frame}
 
 \begin{frame}
-    \frametitle{Choix de la température}
-    Nous avons plusieurs paramètres.
-    La température initiale: elle ne doit pas être trop élevée sinon le début de la recherche sera dans une diversification pure.
-    La température finale: elle ne doit pas être trop basse sinon on passe la fin de la recherche dans une intensification pure.
-    On doit déterminer les bonnes valeurs pour ne pas perdre de temps.
+    \frametitle{Choix des paramètres du recuit}
+    Nous avons plusieurs paramètres
+    \begin{itemize}
+    \item La température initiale: elle ne doit pas être trop élevée sinon le début de la recherche sera dans une diversification pure.
+    \item La température finale: elle ne doit pas être trop basse sinon on passe la fin de la recherche dans une intensification pure.
+    \item Difficulté: déterminer les bonnes valeurs pour éviter de perdre du temps dans la diversification et intensification pure.
+    \item Le coefficient de décroissance de la tempéature: compris entre 0 et 1. On a choisit 0.95 pour avoir une décroissance "douce".
+    \item Le palier: plus la valeur est élevée, plus la recherche dure longtemps mais on trouve de meilleurs solution.
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Illustration de la recherche}
+    \begin{figure}
+        \includegraphics[width=\linewidth]{Figure_1.png}
+        \caption{Stabilisation d'une recherche sur une solution}
+    \end{figure}
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{Résultats obtenus}
+    %Temp 100 temp finale: 0.01  threads 12 decreasing
+    \begin{block}{Paramètres}
+    Température intiale: 100, Température finale: 0.01 \\
+    Coefficient de décroissance : 0.99, steps: 5000, Threads: 32
+    \\~\\
+        \centering
+        \begin{tabular}{|c|c|c|c|c|}
+            \hline
+            fichier & solution & référence & différence & \% \\
+            \hline
+            \hline
+            data1.dat & 5345 & 5243 & +102 & +1.945451 \\
+            data2.dat & 8190 & 8190 & 0 & 0.000000 \\
+            data3.dat & 3967 & 3897 & +70 & +1.796254 \\  
+            data4.dat & 10092 & 9978 & +114 & +1.142514 \\ 
+            data5.dat & 5064 & 4966 & +98 & +1.973419 \\  
+            data6.dat & 15040 & 15030 & +10 & +0.066534 \\
+            data7.dat & 7271 & 7194 & +77 & +1.070336 \\
+            data8.dat & 239162 & 239778 & -616 & -0.256904 \\
+            data9.dat & 230055 & 229428 & +627 & +0.273288 \\
+            data10.dat & 229182 & 226788 & +2394 & +1.055611 \\
+            \hline
+        \end{tabular}
+    \end{block}
+    
+\end{frame}
+
+\begin{frame}
+    \frametitle{Conclusion}
+    Avec le recuit simulé, on arrive à avoir des solutions plutôt bonnes. Nous avons pu mettre en place la recherche d'un voisin suite à deux observations, en combinant nos méthodes. Évidemment, on peu toujours trouver mieux. Il est également dommage d'avoir arrêté de développer l'algorithme évolutionnaire car avec une meilleure recherche locale, il aurait peut-être donné de meilleur résultat que ce qui a été trouvé. 
 \end{frame}
 
 \end{document}

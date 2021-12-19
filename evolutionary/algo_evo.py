@@ -30,6 +30,8 @@ def evolutionnary(data, N, B, E, size, nb_gen, nb_neighbor, cross_prob, mutation
     -------
     
     """
+    #pop, size = create_pop_from_recuit()
+
     pop = generate_pop(size, N, B, E, data)
     for item in pop:
         print(get_cost(item, N, B, E))
@@ -60,14 +62,14 @@ def evolutionnary(data, N, B, E, size, nb_gen, nb_neighbor, cross_prob, mutation
 if __name__ == "__main__":
 
     #inputs
-    datafile = "../samples/data2.dat"
+    datafile = "../samples/data1.dat"
     data, N, B, E = get_data(datafile)
     #Taille pop
     size = 100
     #Nb de générations
-    nb_gen = 100
+    nb_gen = 500
     #Nb de voisins pour recherche locale
-    nb_neighbor = 100
+    nb_neighbor = 1500
 
     #Proba croisement: [0.5,0.9]
     cross_prob = 0.85
@@ -75,6 +77,8 @@ if __name__ == "__main__":
     mutation_prob = 0.01
 
     evolutionnary(data, N, B, E, size, nb_gen, nb_neighbor, cross_prob, mutation_prob)
+
+    #create_pop_from_recuit()
 
 
 #Some Tests
